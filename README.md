@@ -109,6 +109,27 @@ Generated files:
 - `results/wpm_metrics.csv`
 - `figures/lstm_baseline_forecast.pdf`
 
+### Completed: C-03 CNN-LSTM-Attention WPM
+
+The main workload prediction model has been added. It uses a 1-D CNN front-end
+for local pattern extraction, stacked LSTM layers for temporal modeling, and
+multi-head attention for weighting relevant historical time steps.
+
+Current quick benchmark results:
+
+| Model | MAE | RMSE | MAPE |
+| --- | ---: | ---: | ---: |
+| LSTM baseline | 0.0767 | 0.1015 | 19.64% |
+| CNN-LSTM-Attention | 0.0745 | 0.0987 | 18.66% |
+
+In this first run, the CNN-LSTM-Attention model improves over the LSTM baseline
+on all three forecasting metrics.
+
+Generated files:
+
+- `figures/cnn_lstm_attn_forecast.pdf`
+- `figures/cnn_lstm_attn_attention_weights.pdf`
+
 ## How to Reproduce the Current Results
 
 Install dependencies:
@@ -141,6 +162,18 @@ Rebuild LSTM baseline metrics and forecast figure from the saved checkpoint:
 
 ```powershell
 python scripts/evaluate_lstm_baseline.py
+```
+
+Train and evaluate the CNN-LSTM-Attention WPM:
+
+```powershell
+python train.py --model wpm --epochs 20 --batch-size 64 --hidden-size 64 --cnn-channels 32 --n-heads 4
+```
+
+Rebuild CNN-LSTM-Attention metrics and figures from the saved checkpoint:
+
+```powershell
+python scripts/evaluate_wpm.py
 ```
 
 ## Dataset Sources
@@ -184,8 +217,6 @@ DeepSched/
 
 Next updates will add:
 
-- CNN-LSTM-Attention workload prediction model.
-- Prediction plots comparing actual and forecasted utilization.
 - Ablation experiments for model architecture and forecast horizon.
 - CPU scheduling simulator using Gymnasium.
 - Classical scheduling baselines: FCFS, SJF, and Round Robin.
