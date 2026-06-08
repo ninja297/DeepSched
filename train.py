@@ -26,6 +26,17 @@ from models.lstm_baseline import LSTMBaseline
 from models.wpm import WPM
 
 
+def model_horizon(model: nn.Module) -> int | None:
+    return getattr(model, "horizon", getattr(model, "H", None))
+
+
+def align_target(model: nn.Module, target: torch.Tensor) -> torch.Tensor:
+    horizon = model_horizon(model)
+    if horizon is None:
+        return target
+    return target[:, :horizon, :]
+
+
 def get_device() -> torch.device:
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -67,6 +78,7 @@ def train_model(
         train_losses = []
         for xb, yb in train_loader:
             xb, yb = xb.to(device), yb.to(device)
+            yb = align_target(model, yb)
             opt.zero_grad(set_to_none=True)
             loss = loss_fn(model(xb), yb)
             loss.backward()
@@ -77,6 +89,7 @@ def train_model(
         with torch.no_grad():
             val_x = vl["X"].to(device)
             val_y = vl["y"].to(device)
+            val_y = align_target(model, val_y)
             val_loss = loss_fn(model(val_x), val_y).item()
 
         if val_loss < best_val:
@@ -111,7 +124,7 @@ def evaluate_model(
     data = load_split(split, data_dir)
     with torch.no_grad():
         pred = model(data["X"].to(device)).cpu().numpy()
-    true = data["y"].numpy()
+    true = data["y"][:, : pred.shape[1], :].numpy()
 
     row: dict[str, float | str] = {
         "model": model_name,
@@ -145,7 +158,7 @@ def plot_forecast(
     data = load_split("test", data_dir)
     with torch.no_grad():
         pred = model(data["X"].to(device)).cpu().numpy()
-    true = data["y"].numpy()
+    true = data["y"][:, : pred.shape[1], :].numpy()
 
     figures_dir.mkdir(parents=True, exist_ok=True)
     out_path = figures_dir / f"{model_name.lower()}_forecast.pdf"
