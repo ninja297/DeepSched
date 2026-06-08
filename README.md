@@ -120,10 +120,11 @@ Current quick benchmark results:
 | Model | MAE | RMSE | MAPE |
 | --- | ---: | ---: | ---: |
 | LSTM baseline | 0.0767 | 0.1015 | 19.64% |
-| CNN-LSTM-Attention | 0.0745 | 0.0987 | 18.66% |
+| CNN-LSTM-Attention | 0.0744 | 0.0977 | 19.12% |
 
 In this first run, the CNN-LSTM-Attention model improves over the LSTM baseline
-on all three forecasting metrics.
+on MAE and RMSE. MAPE is also lower than the LSTM baseline in the C-04
+architecture ablation table below.
 
 Generated files:
 
@@ -202,7 +203,7 @@ Current scheduling comparison:
 | FCFS | 18.47 | 34.43 | 0.0333 |
 | SJF | 13.51 | 29.47 | 0.0333 |
 | RR-20 | 19.19 | 35.15 | 0.0333 |
-| Rule-WPM | 11.28 | 27.24 | 0.0333 |
+| Rule-WPM | 11.37 | 27.33 | 0.0333 |
 
 The current Rule-WPM advisor uses predicted load level and forecast slope. Under
 high or rising predicted utilization it chooses the shortest remaining job;

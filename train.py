@@ -243,16 +243,16 @@ def run_wpm(args: argparse.Namespace) -> None:
     )
     train_model(
         model,
-        "cnn_lstm_attn",
+        "CNN_LSTM_Attn",
         epochs=args.epochs,
         lr=args.lr,
         batch_size=args.batch_size,
     )
-    evaluate_model(model, "cnn_lstm_attn")
-    checkpoint = Path("models/cnn_lstm_attn_best.pt")
+    evaluate_model(model, "CNN_LSTM_Attn")
+    checkpoint = Path("models/CNN_LSTM_Attn_best.pt")
     model.load_state_dict(torch.load(checkpoint, map_location=get_device(), weights_only=True))
-    plot_forecast(model, "cnn_lstm_attn")
-    plot_attention(model, "cnn_lstm_attn")
+    plot_forecast(model, "CNN_LSTM_Attn")
+    plot_attention(model, "CNN_LSTM_Attn")
 
 
 def parse_args() -> argparse.Namespace:

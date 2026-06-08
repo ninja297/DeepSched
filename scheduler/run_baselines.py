@@ -32,7 +32,7 @@ def build_forecasts() -> pd.DataFrame:
     device = get_device()
     model = WPM(cnn_channels=32, hidden_size=64)
     model.load_state_dict(
-        torch.load(ROOT / "models" / "cnn_lstm_attn_best.pt", map_location=device, weights_only=True)
+        torch.load(ROOT / "models" / "CNN_LSTM_Attn_best.pt", map_location=device, weights_only=True)
     )
     model = model.to(device).eval()
     test = load_split("test", ROOT / "data" / "processed")

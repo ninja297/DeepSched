@@ -39,11 +39,11 @@ def load_models() -> dict[str, torch.nn.Module]:
     device = get_device()
     models: dict[str, torch.nn.Module] = {
         "LSTM_baseline": LSTMBaseline(hidden_size=64),
-        "cnn_lstm_attn": WPM(cnn_channels=32, hidden_size=64),
+        "CNN_LSTM_Attn": WPM(cnn_channels=32, hidden_size=64),
     }
     checkpoints = {
         "LSTM_baseline": ROOT / "models" / "LSTM_baseline_best.pt",
-        "cnn_lstm_attn": ROOT / "models" / "cnn_lstm_attn_best.pt",
+        "CNN_LSTM_Attn": ROOT / "models" / "CNN_LSTM_Attn_best.pt",
     }
     for name, model in models.items():
         model.load_state_dict(

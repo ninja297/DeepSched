@@ -16,11 +16,11 @@ from train import evaluate_model, get_device, plot_attention, plot_forecast
 
 def main() -> int:
     model = WPM(cnn_channels=32, hidden_size=64)
-    checkpoint = "models/cnn_lstm_attn_best.pt"
+    checkpoint = "models/CNN_LSTM_Attn_best.pt"
     model.load_state_dict(torch.load(checkpoint, map_location=get_device(), weights_only=True))
-    evaluate_model(model, "cnn_lstm_attn")
-    plot_forecast(model, "cnn_lstm_attn")
-    plot_attention(model, "cnn_lstm_attn")
+    evaluate_model(model, "CNN_LSTM_Attn")
+    plot_forecast(model, "CNN_LSTM_Attn")
+    plot_attention(model, "CNN_LSTM_Attn")
     return 0
 
 
