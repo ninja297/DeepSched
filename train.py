@@ -23,6 +23,7 @@ from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 
 from models.lstm_baseline import LSTMBaseline
+from models.wpm import WPM
 
 
 def get_device() -> torch.device:
@@ -163,6 +164,39 @@ def plot_forecast(
     return out_path
 
 
+def plot_attention(
+    model: nn.Module,
+    model_name: str,
+    data_dir: Path = Path("data/processed"),
+    figures_dir: Path = Path("figures"),
+) -> Path | None:
+    if not hasattr(model, "attn_weights"):
+        return None
+
+    device = get_device()
+    model = model.to(device).eval()
+    data = load_split("test", data_dir)
+    with torch.no_grad():
+        _ = model(data["X"][:1].to(device))
+    weights = getattr(model, "attn_weights", None)
+    if weights is None:
+        return None
+
+    figures_dir.mkdir(parents=True, exist_ok=True)
+    out_path = figures_dir / f"{model_name.lower()}_attention_weights.pdf"
+    plt.figure(figsize=(7, 4))
+    plt.imshow(weights[0].cpu().numpy(), aspect="auto", cmap="Blues")
+    plt.colorbar(label="Attention weight")
+    plt.title(f"{model_name}: attention weights")
+    plt.xlabel("Key time step")
+    plt.ylabel("Query time step")
+    plt.tight_layout()
+    plt.savefig(out_path, bbox_inches="tight")
+    plt.close()
+    print(f"Saved {out_path}")
+    return out_path
+
+
 def run_lstm_baseline(args: argparse.Namespace) -> None:
     model = LSTMBaseline(
         input_size=args.input_size,
@@ -184,15 +218,41 @@ def run_lstm_baseline(args: argparse.Namespace) -> None:
     plot_forecast(model, "LSTM_baseline")
 
 
+def run_wpm(args: argparse.Namespace) -> None:
+    model = WPM(
+        input_size=args.input_size,
+        cnn_channels=args.cnn_channels,
+        hidden_size=args.hidden_size,
+        lstm_layers=args.num_layers,
+        n_heads=args.n_heads,
+        horizon=args.horizon,
+        dropout=args.dropout,
+    )
+    train_model(
+        model,
+        "cnn_lstm_attn",
+        epochs=args.epochs,
+        lr=args.lr,
+        batch_size=args.batch_size,
+    )
+    evaluate_model(model, "cnn_lstm_attn")
+    checkpoint = Path("models/cnn_lstm_attn_best.pt")
+    model.load_state_dict(torch.load(checkpoint, map_location=get_device(), weights_only=True))
+    plot_forecast(model, "cnn_lstm_attn")
+    plot_attention(model, "cnn_lstm_attn")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", choices=["lstm"], default="lstm")
+    parser.add_argument("--model", choices=["lstm", "wpm"], default="lstm")
     parser.add_argument("--epochs", type=int, default=30)
     parser.add_argument("--lr", type=float, default=1e-3)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--input-size", type=int, default=1)
     parser.add_argument("--hidden-size", type=int, default=128)
+    parser.add_argument("--cnn-channels", type=int, default=64)
     parser.add_argument("--num-layers", type=int, default=2)
+    parser.add_argument("--n-heads", type=int, default=4)
     parser.add_argument("--horizon", type=int, default=10)
     parser.add_argument("--dropout", type=float, default=0.2)
     return parser.parse_args()
@@ -202,6 +262,8 @@ def main() -> int:
     args = parse_args()
     if args.model == "lstm":
         run_lstm_baseline(args)
+    elif args.model == "wpm":
+        run_wpm(args)
     return 0
 
 
