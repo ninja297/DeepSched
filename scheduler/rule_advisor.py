@@ -11,17 +11,16 @@ from scheduler.simulation import Process, RuntimeProcess, clone_processes, metri
 def rule_advisor(
     ready: list[RuntimeProcess],
     forecast: np.ndarray,
-    tau_hi: float = 0.75,
-    tau_lo: float = 0.40,
+    tau_hi: float = 0.35,
+    slope_hi: float = 0.01,
 ) -> int:
     """Pick a ready-queue index using the predicted utilization horizon."""
     if not ready:
         return 0
     u = float(np.mean(forecast))
-    if u >= tau_hi:
+    slope = float(forecast[-1] - forecast[0])
+    if u >= tau_hi or slope >= slope_hi:
         return min(range(len(ready)), key=lambda i: ready[i].remaining)
-    if u <= tau_lo:
-        return max(range(len(ready)), key=lambda i: ready[i].remaining)
     return 0
 
 
