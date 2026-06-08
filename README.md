@@ -130,6 +130,43 @@ Generated files:
 - `figures/cnn_lstm_attn_forecast.pdf`
 - `figures/cnn_lstm_attn_attention_weights.pdf`
 
+### Completed: C-04 WPM Ablation Studies
+
+Architecture and horizon ablations have been implemented. The architecture
+ablation isolates the effect of CNN feature extraction and attention. The
+horizon ablation compares short and longer forecast horizons supported by the
+current processed tensor target.
+
+Current architecture ablation results:
+
+| Model | MAE | RMSE | MAPE |
+| --- | ---: | ---: | ---: |
+| LSTM only | 0.0778 | 0.1022 | 20.09% |
+| CNN-LSTM | 0.0751 | 0.0991 | 19.31% |
+| LSTM-Attention | 0.0772 | 0.1016 | 19.81% |
+| CNN-LSTM-Attention | 0.0744 | 0.0977 | 19.12% |
+
+Current horizon ablation results:
+
+| Horizon | MAE | RMSE | MAPE |
+| ---: | ---: | ---: | ---: |
+| H=1 | 0.0620 | 0.0840 | 15.32% |
+| H=5 | 0.0698 | 0.0923 | 18.27% |
+| H=10 | 0.0759 | 0.1005 | 18.89% |
+
+The current results show the expected trend: shorter horizons are easier to
+predict, and the full CNN-LSTM-Attention model is the strongest architecture in
+this quick ablation run.
+
+Generated files:
+
+- `figures/ablation_bar.pdf`
+- `figures/horizon_line.pdf`
+- `figures/lstm_only_forecast.pdf`
+- `figures/cnn_lstm_forecast.pdf`
+- `figures/lstm_attention_forecast.pdf`
+- `figures/lstm_attention_attention_weights.pdf`
+
 ### Completed: C-04.5 Forecast Quality Analysis
 
 Aggregate forecasting metrics are not enough for a scheduling paper, so the
@@ -185,6 +222,10 @@ Install dependencies:
 pip install -r requirements.txt
 ```
 
+GPU note: PyTorch automatically uses CUDA when available. On the current
+development machine, CUDA is available with one `NVIDIA GeForce RTX 4050 Laptop
+GPU`, so model training uses the GPU by default through `train.get_device()`.
+
 Download the current default dataset sample:
 
 ```powershell
@@ -227,6 +268,12 @@ Run forecast quality analysis:
 
 ```powershell
 python analysis/forecast_quality.py
+```
+
+Run C-04 ablations:
+
+```powershell
+python scripts/run_ablation.py --epochs 15 --batch-size 64 --hidden-size 64 --cnn-channels 32
 ```
 
 Run scheduling baselines and Rule-WPM:
@@ -276,7 +323,6 @@ DeepSched/
 
 Next updates will add:
 
-- Ablation experiments for model architecture and forecast horizon.
 - Larger dataset experiments using broader Alibaba coverage and Google Cluster
   Trace.
 - CPU scheduling simulator using Gymnasium.
