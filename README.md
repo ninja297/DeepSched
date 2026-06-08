@@ -85,6 +85,30 @@ Generated files:
 Large raw and generated files are intentionally ignored by Git so the repository
 stays lightweight and reproducible.
 
+### Completed: C-02 LSTM Baseline
+
+The first workload prediction baseline has been implemented using a stacked LSTM
+model. It predicts the next 10 CPU-utilization steps from the previous 60 steps.
+
+Current baseline configuration:
+
+- model: 2-layer LSTM
+- hidden size: 64 for the first quick benchmark run
+- optimizer: Adam
+- loss: mean squared error
+- epochs: 20
+
+Current test-set results:
+
+| Model | MAE | RMSE | MAPE |
+| --- | ---: | ---: | ---: |
+| LSTM baseline | 0.0767 | 0.1015 | 19.64% |
+
+Generated files:
+
+- `results/wpm_metrics.csv`
+- `figures/lstm_baseline_forecast.pdf`
+
 ## How to Reproduce the Current Results
 
 Install dependencies:
@@ -106,6 +130,18 @@ python data/preprocess.py
 ```
 
 This recreates the processed tensors and the first EDA figure.
+
+Train and evaluate the current LSTM baseline:
+
+```powershell
+python train.py --model lstm --epochs 20 --batch-size 64 --hidden-size 64
+```
+
+Rebuild LSTM baseline metrics and forecast figure from the saved checkpoint:
+
+```powershell
+python scripts/evaluate_lstm_baseline.py
+```
 
 ## Dataset Sources
 
@@ -148,8 +184,6 @@ DeepSched/
 
 Next updates will add:
 
-- LSTM baseline model and shared training loop.
-- Test-set forecasting metrics: MAE, RMSE, and MAPE.
 - CNN-LSTM-Attention workload prediction model.
 - Prediction plots comparing actual and forecasted utilization.
 - Ablation experiments for model architecture and forecast horizon.
