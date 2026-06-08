@@ -6,11 +6,12 @@ import argparse
 import os
 from pathlib import Path
 
-import matplotlib
-
 _mpl_config_dir = Path(".cache/matplotlib").resolve()
 _mpl_config_dir.mkdir(parents=True, exist_ok=True)
 os.environ.setdefault("MPLCONFIGDIR", str(_mpl_config_dir))
+
+import matplotlib
+
 matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
