@@ -130,6 +130,53 @@ Generated files:
 - `figures/cnn_lstm_attn_forecast.pdf`
 - `figures/cnn_lstm_attn_attention_weights.pdf`
 
+### Completed: C-04.5 Forecast Quality Analysis
+
+Aggregate forecasting metrics are not enough for a scheduling paper, so the
+repository now includes additional forecast-quality analysis:
+
+- error by forecast horizon step
+- burst detection quality
+- peak detection quality
+
+Current finding:
+
+- CNN-LSTM-Attention improves horizon-wise RMSE over the LSTM baseline.
+- Burst and peak detection are still weak on the small current dataset.
+- This confirms that the final paper needs larger Alibaba coverage plus Google
+  Cluster Trace experiments before making strong generalization claims.
+
+Generated files:
+
+- `results/forecast_horizon_metrics.csv`
+- `results/forecast_event_metrics.csv`
+- `figures/forecast_error_vs_horizon.pdf`
+- `figures/burst_peak_detection.pdf`
+
+### Completed: C-06 First Scheduling Metrics
+
+The repository now includes a deterministic CPU scheduling simulator with
+classical baselines and a forecast-aware rule advisor.
+
+Current scheduling comparison:
+
+| Scheduler | AWT | ATT | Throughput |
+| --- | ---: | ---: | ---: |
+| FCFS | 18.47 | 34.43 | 0.0333 |
+| SJF | 13.51 | 29.47 | 0.0333 |
+| RR-20 | 19.19 | 35.15 | 0.0333 |
+| Rule-WPM | 11.28 | 27.24 | 0.0333 |
+
+The current Rule-WPM advisor uses predicted load level and forecast slope. Under
+high or rising predicted utilization it chooses the shortest remaining job;
+otherwise it keeps FCFS behavior. This gives the project an interpretable
+forecast-aware scheduling result even before PPO is added.
+
+Generated files:
+
+- `results/scheduling_metrics.csv`
+- `figures/baseline_comparison.pdf`
+
 ## How to Reproduce the Current Results
 
 Install dependencies:
@@ -176,6 +223,18 @@ Rebuild CNN-LSTM-Attention metrics and figures from the saved checkpoint:
 python scripts/evaluate_wpm.py
 ```
 
+Run forecast quality analysis:
+
+```powershell
+python analysis/forecast_quality.py
+```
+
+Run scheduling baselines and Rule-WPM:
+
+```powershell
+python scheduler/run_baselines.py
+```
+
 ## Dataset Sources
 
 The proposal targets two real-world cluster workload datasets:
@@ -218,9 +277,9 @@ DeepSched/
 Next updates will add:
 
 - Ablation experiments for model architecture and forecast horizon.
+- Larger dataset experiments using broader Alibaba coverage and Google Cluster
+  Trace.
 - CPU scheduling simulator using Gymnasium.
-- Classical scheduling baselines: FCFS, SJF, and Round Robin.
-- WPM-guided rule-based scheduling advisor.
 - PPO reinforcement learning scheduler.
 - Final result tables and paper-ready figures.
 
