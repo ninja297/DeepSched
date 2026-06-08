@@ -191,30 +191,6 @@ Generated files:
 - `figures/forecast_error_vs_horizon.pdf`
 - `figures/burst_peak_detection.pdf`
 
-### Completed: C-06 First Scheduling Metrics
-
-The repository now includes a deterministic CPU scheduling simulator with
-classical baselines and a forecast-aware rule advisor.
-
-Current scheduling comparison:
-
-| Scheduler | AWT | ATT | Throughput |
-| --- | ---: | ---: | ---: |
-| FCFS | 18.47 | 34.43 | 0.0333 |
-| SJF | 13.51 | 29.47 | 0.0333 |
-| RR-20 | 19.19 | 35.15 | 0.0333 |
-| Rule-WPM | 11.37 | 27.33 | 0.0333 |
-
-The current Rule-WPM advisor uses predicted load level and forecast slope. Under
-high or rising predicted utilization it chooses the shortest remaining job;
-otherwise it keeps FCFS behavior. This gives the project an interpretable
-forecast-aware scheduling result even before PPO is added.
-
-Generated files:
-
-- `results/scheduling_metrics.csv`
-- `figures/baseline_comparison.pdf`
-
 ### Completed: C-05 Gymnasium Scheduler Environment
 
 The project now includes a Gymnasium-compatible CPU scheduling environment for
@@ -238,6 +214,30 @@ Validation:
 Generated file:
 
 - `results/random_agent.csv`
+
+### Completed: C-06 First Scheduling Metrics
+
+After validating the scheduler environment milestone, the project now includes
+classical scheduling baselines and a forecast-aware rule advisor.
+
+Current scheduling comparison:
+
+| Scheduler | AWT | ATT | Throughput |
+| --- | ---: | ---: | ---: |
+| FCFS | 18.47 | 34.43 | 0.0333 |
+| SJF | 13.51 | 29.47 | 0.0333 |
+| RR-20 | 19.19 | 35.15 | 0.0333 |
+| Rule-WPM | 11.37 | 27.33 | 0.0333 |
+
+The current Rule-WPM advisor uses predicted load level and forecast slope. Under
+high or rising predicted utilization it chooses the shortest remaining job;
+otherwise it keeps FCFS behavior. This gives the project an interpretable
+forecast-aware scheduling result even before PPO is added.
+
+Generated files:
+
+- `results/scheduling_metrics.csv`
+- `figures/baseline_comparison.pdf`
 
 ## How to Reproduce the Current Results
 
@@ -353,7 +353,6 @@ DeepSched/
   models/                  # trained models, ignored by Git
   results/                 # metric CSV files, ignored by Git
   requirements.txt
-  DeLTA26_048_Proposal.pdf
 ```
 
 ## Planned Updates
