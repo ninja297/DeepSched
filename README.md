@@ -215,6 +215,30 @@ Generated files:
 - `results/scheduling_metrics.csv`
 - `figures/baseline_comparison.pdf`
 
+### Completed: C-05 Gymnasium Scheduler Environment
+
+The project now includes a Gymnasium-compatible CPU scheduling environment for
+the reinforcement-learning stage. The environment simulates a bounded ready
+queue, process arrivals, CPU burst execution, time-quantum scheduling, and
+episode-level scheduling metrics.
+
+Environment design:
+
+- observation: normalized remaining bursts, waiting times, and optional WPM
+  forecast vector
+- action: select one ready-queue slot to run
+- reward: negative weighted cost of waiting, energy proxy, and queue pressure
+- metrics: AWT, ATT, throughput, CPU utilization, energy proxy, completed jobs
+
+Validation:
+
+- `env/validate_env.py` passes Gymnasium's environment checker.
+- `scheduler/random_agent.py` produces a random-agent sanity baseline.
+
+Generated file:
+
+- `results/random_agent.csv`
+
 ## How to Reproduce the Current Results
 
 Install dependencies:
@@ -283,6 +307,18 @@ Run scheduling baselines and Rule-WPM:
 python scheduler/run_baselines.py
 ```
 
+Validate the Gymnasium scheduling environment:
+
+```powershell
+python env/validate_env.py
+```
+
+Run the random-agent environment baseline:
+
+```powershell
+python scheduler/random_agent.py
+```
+
 ## Dataset Sources
 
 The proposal targets two real-world cluster workload datasets:
@@ -326,7 +362,6 @@ Next updates will add:
 
 - Larger dataset experiments using broader Alibaba coverage and Google Cluster
   Trace.
-- CPU scheduling simulator using Gymnasium.
 - PPO reinforcement learning scheduler.
 - Final result tables and paper-ready figures.
 
