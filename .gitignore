@@ -12,6 +12,7 @@ data/processed/
 models/*.pt
 models/*.pth
 models/*.zip
+!models/ppo_*_stage1.zip
 figures/*.png
 runs/
 wandb/
