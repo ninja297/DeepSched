@@ -239,6 +239,52 @@ Generated files:
 - `results/scheduling_metrics.csv`
 - `figures/baseline_comparison.pdf`
 
+### Completed: C-07 PPO Scheduler
+
+Stage 1 PPO training has been implemented using Stable-Baselines3. Two agents
+are trained and evaluated in the Gymnasium scheduling environment:
+
+- `PPO_no_forecast`: policy observes queue state without WPM forecasts
+- `PPO_DeepSched`: policy observes queue state plus WPM forecast features
+
+Current Stage 1 RL comparison inside `CPUSchedEnv`:
+
+| Scheduler | AWT | ATT | Mean Reward |
+| --- | ---: | ---: | ---: |
+| Random | 155.10 | 172.01 | -0.4424 |
+| FCFS policy | 153.45 | 170.17 | -0.4407 |
+| SJF policy | 84.43 | 101.23 | -0.6650 |
+| Rule-WPM policy | 84.31 | 101.11 | -0.6614 |
+| PPO no forecast | 75.83 | 92.69 | -0.2973 |
+| PPO DeepSched | 89.06 | 105.63 | -0.3321 |
+
+Important Stage 1 finding: PPO learns a useful scheduling policy compared with
+random and fixed heuristic policies, but the forecast-aware PPO is not yet
+better than PPO without forecasts. This means PPO needs further reward/state
+tuning in Stage 2; the forecast-aware rule advisor remains the stronger
+interpretable scheduling result for now.
+
+Generated files:
+
+- `models/PPO_no_forecast_stage1.zip`
+- `models/PPO_DeepSched_stage1.zip`
+- `results/ppo_metrics.csv`
+- `results/ppo_training_curve.csv`
+
+### Completed: C-08 Figure Builder
+
+The repository now includes a single script for rebuilding paper summary
+figures from saved result CSV files.
+
+Generated or rebuilt files:
+
+- `figures/ablation_bar.pdf`
+- `figures/horizon_line.pdf`
+- `figures/forecast_error_vs_horizon.pdf`
+- `figures/burst_peak_detection.pdf`
+- `figures/ppo_vs_baselines.pdf`
+- `figures/ppo_reward_curve.pdf`
+
 ## How to Reproduce the Current Results
 
 Install dependencies:
@@ -319,6 +365,24 @@ Run the random-agent environment baseline:
 python scheduler/random_agent.py
 ```
 
+Train and evaluate Stage 1 PPO agents:
+
+```powershell
+python scheduler/ppo_agent.py --total-timesteps 12000 --n-envs 4 --eval-seeds 100 101
+```
+
+Re-evaluate PPO and same-environment heuristic baselines:
+
+```powershell
+python scheduler/evaluate_rl.py
+```
+
+Rebuild C-08 summary figures:
+
+```powershell
+python figures/plot_all.py
+```
+
 ## Dataset Sources
 
 The proposal targets two real-world cluster workload datasets:
@@ -361,8 +425,8 @@ Next updates will add:
 
 - Larger dataset experiments using broader Alibaba coverage and Google Cluster
   Trace.
-- PPO reinforcement learning scheduler.
-- Final result tables and paper-ready figures.
+- Stage 2 reward/state tuning for PPO.
+- Final paper writing and expanded result tables.
 
 ## Expected Paper Results
 
