@@ -9,6 +9,36 @@ The project is being built step by step so that the final repository contains
 the code, experimental results, figures, and reproducibility material needed for
 a complete research paper.
 
+## Development Stages
+
+DeepSched is being developed in two stages.
+
+### Stage 1: Prototype Development
+
+Stage 1 builds the complete end-to-end pipeline on a compact Alibaba-derived
+dataset sample. The goal is to make every component work before scaling up:
+
+- data preprocessing
+- workload prediction
+- model ablations
+- forecast quality analysis
+- scheduler simulation
+- forecast-aware rule scheduling
+- PPO scheduling
+- figure generation
+- Stage 1 summary and conclusion
+
+Stage 1 results are meaningful for validating the method and implementation, but
+they are not final paper-level generalization claims.
+
+### Stage 2: Full Experimental Development
+
+Stage 2 will expand the datasets and rerun the full pipeline. It will use
+broader Alibaba coverage and Google Cluster Trace data, then repeat all
+forecasting, scheduling, PPO, ablation, and figure-generation steps.
+
+Stage 2 is where the final research-paper claims should be made.
+
 ## Research Goal
 
 Traditional CPU schedulers such as FCFS, SJF, Round Robin, and CFS make
@@ -35,9 +65,9 @@ learning-based baselines using prediction and scheduling metrics.
 
 ## Implementation Plan
 
-The repository is organized around research milestones:
+The repository is organized around Stage 1 research milestones:
 
-| Stage | Purpose | Expected Outputs |
+| Milestone | Purpose | Expected Outputs |
 | --- | --- | --- |
 | C-01 | Data download and preprocessing | `data/processed/*.pt`, `scaler.pkl`, `figures/data_eda.pdf` |
 | C-02 | LSTM workload prediction baseline | baseline model, MAE/RMSE/MAPE results |
@@ -47,6 +77,7 @@ The repository is organized around research milestones:
 | C-06 | Classical schedulers and rule advisor | scheduling baseline table |
 | C-07 | PPO scheduling agent | trained RL scheduler and reward curves |
 | C-08 | Paper figures | final publication-quality figures |
+| C-09 | Stage 1 report | current results, conclusion, Stage 2 plan |
 
 ## Current Status
 
@@ -285,6 +316,20 @@ Generated or rebuilt files:
 - `figures/ppo_vs_baselines.pdf`
 - `figures/ppo_reward_curve.pdf`
 
+### Completed: C-09 Stage 1 Report and Conclusion
+
+The Stage 1 summary has been written in `docs/stage1_report.md`. It collects
+the current results, explains what they mean, documents the key limitations, and
+defines the Stage 2 plan.
+
+Current Stage 1 conclusion:
+
+- DeepSched is implemented end to end.
+- CNN-LSTM-Attention is the strongest Stage 1 forecasting model.
+- Forecast-aware Rule-WPM is the strongest interpretable scheduling result.
+- PPO is operational but requires Stage 2 reward/state tuning.
+- Larger Alibaba and Google datasets are required before final paper claims.
+
 ## How to Reproduce the Current Results
 
 Install dependencies:
@@ -383,6 +428,12 @@ Rebuild C-08 summary figures:
 python figures/plot_all.py
 ```
 
+Read the C-09 Stage 1 report:
+
+```powershell
+Get-Content docs/stage1_report.md
+```
+
 ## Dataset Sources
 
 The proposal targets two real-world cluster workload datasets:
@@ -409,6 +460,8 @@ default 60-step lookback window.
 
 ```text
 DeepSched/
+  docs/
+    stage1_report.md       # C-09 Stage 1 report and conclusion
   data/
     preprocess.py          # C-01 preprocessing pipeline
   scripts/
@@ -419,14 +472,20 @@ DeepSched/
   requirements.txt
 ```
 
-## Planned Updates
+## Stage 2 Plan
 
-Next updates will add:
+After Stage 1, the next development phase will:
 
-- Larger dataset experiments using broader Alibaba coverage and Google Cluster
-  Trace.
-- Stage 2 reward/state tuning for PPO.
-- Final paper writing and expanded result tables.
+- expand Alibaba trace coverage beyond the compact sample
+- add Google Cluster Trace experiments
+- rerun preprocessing for each dataset
+- retrain all WPM models and ablations
+- rerun forecast-quality analysis, including burst and peak detection
+- recalibrate Rule-WPM thresholds using validation data
+- tune PPO state representation, reward design, and training length
+- evaluate PPO with and without forecasts across more seeds
+- rebuild all final paper figures and tables
+- write the full research paper from the Stage 2 results
 
 ## Expected Paper Results
 
