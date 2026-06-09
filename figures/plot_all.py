@@ -86,7 +86,11 @@ def plot_event_quality() -> None:
 
 
 def plot_scheduling() -> None:
-    df = pd.read_csv(RESULTS / "scheduling_metrics.csv").dropna(subset=["AWT"])
+    path = RESULTS / "ppo_metrics.csv"
+    if path.exists():
+        df = pd.read_csv(path).dropna(subset=["AWT"])
+    else:
+        df = pd.read_csv(RESULTS / "scheduling_metrics.csv").dropna(subset=["AWT"])
     plot_df = df.sort_values("AWT", ascending=True)
     plt.figure(figsize=(8, 4.2))
     colors = [

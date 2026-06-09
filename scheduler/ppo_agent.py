@@ -155,15 +155,9 @@ def evaluate_agent(
     return summary
 
 
-def update_scheduling_metrics(rows: list[dict[str, float | str]]) -> None:
-    out_path = ROOT / "results" / "scheduling_metrics.csv"
-    if out_path.exists():
-        df = pd.read_csv(out_path)
-        df = df[~df["scheduler"].isin([str(row["scheduler"]) for row in rows])]
-    else:
-        df = pd.DataFrame()
-    df = pd.concat([df, pd.DataFrame(rows)], ignore_index=True)
-    df.to_csv(out_path, index=False)
+def save_ppo_metrics(rows: list[dict[str, float | str]]) -> None:
+    out_path = ROOT / "results" / "ppo_metrics.csv"
+    pd.DataFrame(rows).to_csv(out_path, index=False)
 
 
 def save_training_curve(loggers: list[RewardLogger]) -> None:
@@ -220,7 +214,7 @@ def main() -> int:
         evaluate_agent(agent, label, use_forecast, args.eval_seeds)
         for label, use_forecast, agent in agents
     ]
-    update_scheduling_metrics(rows)
+    save_ppo_metrics(rows)
     save_training_curve(loggers)
     print(pd.DataFrame(rows))
     return 0
