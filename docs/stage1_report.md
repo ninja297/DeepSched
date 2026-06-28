@@ -2,7 +2,12 @@
 
 Stage 1 is the prototype-development phase of DeepSched. Its goal is to make
 the complete research pipeline executable end to end on a compact dataset before
-scaling the experiments to larger Alibaba and Google traces in Stage 2.
+scaling the experiments to larger Alibaba and Google traces in future work.
+
+Paper title:
+
+**DeepSched: A Confidence-Aware Adaptive CPU Scheduling Framework Using Deep
+Workload Prediction**
 
 ## Stage 1 Scope
 
@@ -14,7 +19,7 @@ Stage 1 includes:
 - C-04 WPM ablation studies
 - C-04.5 forecast quality analysis
 - C-05 Gymnasium CPU scheduling environment
-- C-06 classical schedulers and forecast-aware rule advisor
+- C-06 classical schedulers and confidence-aware adaptive advisor
 - C-07 PPO scheduling agent
 - C-08 figure builder
 - C-09 Stage 1 result summary and conclusion
@@ -68,19 +73,23 @@ This is a useful Stage 1 finding: the model can reduce average forecast error,
 but the current dataset and loss formulation are not enough for robust
 burst/peak prediction.
 
-### Classical Scheduling and Rule Advisor
+### Confidence-Aware Adaptive Scheduling
 
-The forecast-aware rule advisor improves the deterministic Stage 1 scheduling
-simulation.
+The Confidence_Rule_WPM scheduler improves the deterministic Stage 1 scheduling
+simulation. It does not blindly trust workload forecasts. Instead, it estimates
+forecast confidence from horizon stability and uses predictions only when the
+confidence score is high enough. If confidence is low, it falls back to FCFS.
 
 | Scheduler | AWT | ATT | Throughput |
 | --- | ---: | ---: | ---: |
 | FCFS | 18.47 | 34.43 | 0.0333 |
 | SJF | 13.51 | 29.47 | 0.0333 |
 | RR-20 | 19.19 | 35.15 | 0.0333 |
-| Rule-WPM | 11.37 | 27.33 | 0.0333 |
+| Confidence_Rule_WPM | 11.54 | 27.50 | 0.0333 |
 
-The Rule-WPM result is currently the strongest interpretable scheduling result.
+The mean confidence score is 0.8022 and the advisor trusts forecasts for 93.41%
+of scheduling decisions. This is currently the strongest interpretable
+scheduling result.
 
 ### PPO Scheduling
 
@@ -92,13 +101,15 @@ forecast-aware PPO agent is not yet stronger than PPO without forecasts.
 | Random | 155.10 | 172.01 | -0.4424 |
 | FCFS policy | 153.45 | 170.17 | -0.4407 |
 | SJF policy | 84.43 | 101.23 | -0.6650 |
-| Rule-WPM policy | 84.31 | 101.11 | -0.6614 |
+| Confidence_Rule_WPM | 153.45 | 170.17 | -0.4407 |
 | PPO no forecast | 75.83 | 92.69 | -0.2973 |
 | PPO DeepSched | 89.06 | 105.63 | -0.3321 |
 
-This means Stage 1 PPO is useful as a working RL baseline, but Stage 2 must tune
-the state representation, reward, training horizon, and evaluation protocol
-before making a stronger PPO contribution.
+In the Gymnasium environment, Confidence_Rule_WPM currently falls back to FCFS
+for most decisions because early episode forecast features are not informative.
+This is an implementation limitation to address in future work. PPO is useful as
+a working RL baseline, but reward/state tuning is required before making a
+stronger PPO contribution.
 
 ## Stage 1 Conclusion
 
@@ -108,7 +119,7 @@ training, and figure generation. The results are meaningful for development:
 
 - The WPM architecture is justified by ablation results.
 - Forecast horizon behavior follows the expected trend.
-- The forecast-aware rule advisor improves scheduling metrics in the
+- The confidence-aware adaptive advisor improves scheduling metrics in the
   deterministic simulator.
 - PPO is operational but not yet the main contribution.
 
@@ -116,9 +127,9 @@ The project is not yet ready for final research-paper claims. The current
 results are best described as a validated prototype and Stage 1 feasibility
 study.
 
-## Stage 2 Plan
+## Future Work
 
-Stage 2 will rerun the full pipeline on stronger datasets and with improved
+Future work will rerun the full pipeline on stronger datasets and with improved
 evaluation:
 
 - expand Alibaba trace coverage beyond the compact sample
@@ -126,11 +137,13 @@ evaluation:
 - regenerate processed tensors for each dataset
 - retrain LSTM, CNN-LSTM, LSTM-Attention, and CNN-LSTM-Attention models
 - rerun horizon and burst/peak forecast-quality analysis
-- recalibrate Rule-WPM thresholds per validation data
+- calibrate confidence thresholds using validation residuals
+- compare confidence estimates from horizon stability, validation residuals,
+  ensembles, MC dropout, and conformal intervals
 - improve PPO state representation and reward design
 - evaluate PPO with and without forecasts over more seeds and longer training
 - compare results across datasets to test generalization
 - prepare final paper tables, figures, and conclusion
 
-The Stage 2 goal is to turn the Stage 1 prototype into a paper-ready empirical
-study.
+The future-work goal is to turn the Stage 1 prototype into a paper-ready
+empirical study.

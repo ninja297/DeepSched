@@ -1,4 +1,4 @@
-"""Run C-06 scheduling baselines and the WPM-guided rule advisor."""
+"""Run C-06 scheduling baselines and confidence-aware WPM advisor."""
 
 from __future__ import annotations
 
@@ -45,10 +45,13 @@ def plot_metrics(df: pd.DataFrame, figures_dir: Path) -> None:
     figures_dir.mkdir(parents=True, exist_ok=True)
     plot_df = df.sort_values("AWT", ascending=True)
     plt.figure(figsize=(7, 3.8))
-    colors = ["#2563EB" if row == "Rule_WPM" else "#94A3B8" for row in plot_df["scheduler"]]
+    colors = [
+        "#2563EB" if row == "Confidence_Rule_WPM" else "#94A3B8"
+        for row in plot_df["scheduler"]
+    ]
     plt.barh(plot_df["scheduler"], plot_df["AWT"], color=colors)
     plt.xlabel("Average waiting time")
-    plt.title("Scheduling Baselines vs Forecast-Aware Rule Advisor")
+    plt.title("Scheduling Baselines vs Confidence-Aware Advisor")
     plt.tight_layout()
     plt.savefig(figures_dir / "baseline_comparison.pdf", bbox_inches="tight")
     plt.close()
@@ -61,7 +64,7 @@ def main() -> int:
         {"scheduler": "FCFS", **run_fcfs(processes)},
         {"scheduler": "SJF", **run_sjf(processes)},
         {"scheduler": "RR_20", **run_rr(processes, quantum=20.0)},
-        {"scheduler": "Rule_WPM", **run_rule_advisor(processes, forecasts, quantum=20.0)},
+        {"scheduler": "Confidence_Rule_WPM", **run_rule_advisor(processes, forecasts, quantum=20.0)},
     ]
     df = pd.DataFrame(rows)
     results_dir = ROOT / "results"

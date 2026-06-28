@@ -1,17 +1,21 @@
 # DeepSched
 
+Paper title:
+
+**DeepSched: A Confidence-Aware Adaptive CPU Scheduling Framework Using Deep
+Workload Prediction**
+
 DeepSched is a research implementation of a deep learning-assisted CPU workload
 prediction and scheduling framework. The goal is to move beyond purely reactive
 CPU scheduling heuristics by forecasting near-future CPU utilization and using
-those forecasts to guide scheduling decisions.
+those forecasts to guide scheduling decisions only when the model is confident
+enough to trust them.
 
 The project is being built step by step so that the final repository contains
 the code, experimental results, figures, and reproducibility material needed for
 a complete research paper.
 
-## Development Stages
-
-DeepSched is being developed in two stages.
+## Development Scope
 
 ### Stage 1: Prototype Development
 
@@ -23,7 +27,7 @@ dataset sample. The goal is to make every component work before scaling up:
 - model ablations
 - forecast quality analysis
 - scheduler simulation
-- forecast-aware rule scheduling
+- confidence-aware adaptive scheduling
 - PPO scheduling
 - figure generation
 - Stage 1 summary and conclusion
@@ -31,13 +35,11 @@ dataset sample. The goal is to make every component work before scaling up:
 Stage 1 results are meaningful for validating the method and implementation, but
 they are not final paper-level generalization claims.
 
-### Stage 2: Full Experimental Development
+### Future Work: Full Experimental Development
 
-Stage 2 will expand the datasets and rerun the full pipeline. It will use
-broader Alibaba coverage and Google Cluster Trace data, then repeat all
-forecasting, scheduling, PPO, ablation, and figure-generation steps.
-
-Stage 2 is where the final research-paper claims should be made.
+Future work will expand the datasets and rerun the full pipeline using broader
+Alibaba coverage and Google Cluster Trace data. Final research-paper claims
+should be made only after that larger evaluation.
 
 ## Research Goal
 
@@ -46,7 +48,7 @@ decisions from the current system state. They do not explicitly predict future
 workload behavior, which can lead to higher waiting time, turnaround time, and
 energy use under bursty or dynamic workloads.
 
-DeepSched proposes a two-stage pipeline:
+DeepSched proposes a two-module pipeline:
 
 1. Workload Prediction Module (WPM)
    - Learns CPU utilization patterns from historical trace data.
@@ -54,9 +56,11 @@ DeepSched proposes a two-stage pipeline:
    - Extends to a CNN-LSTM-Attention model for stronger short-horizon
      forecasting.
 
-2. Scheduling Advisor Module (SAM)
-   - Uses predicted CPU utilization to guide scheduling decisions.
-   - Starts with classical baselines and a rule-based advisor.
+2. Confidence-Aware Scheduling Advisor Module (SAM)
+   - Estimates whether workload predictions are trustworthy.
+   - Uses predictions only when confidence is high.
+   - Falls back to classical scheduling behavior when confidence is low.
+   - Starts with classical baselines and a confidence-aware adaptive advisor.
    - Extends to a PPO reinforcement learning agent in a simulated CPU
      scheduling environment.
 
@@ -77,7 +81,7 @@ The repository is organized around Stage 1 research milestones:
 | C-06 | Classical schedulers and rule advisor | scheduling baseline table |
 | C-07 | PPO scheduling agent | trained RL scheduler and reward curves |
 | C-08 | Paper figures | final publication-quality figures |
-| C-09 | Stage 1 report | current results, conclusion, Stage 2 plan |
+| C-09 | Stage 1 report | current results, conclusion, future-work plan |
 
 ## Current Status
 
@@ -246,10 +250,10 @@ Generated file:
 
 - `results/random_agent.csv`
 
-### Completed: C-06 First Scheduling Metrics
+### Completed: C-06 Confidence-Aware Adaptive Scheduling
 
 After validating the scheduler environment milestone, the project now includes
-classical scheduling baselines and a forecast-aware rule advisor.
+classical scheduling baselines and a confidence-aware adaptive scheduler.
 
 Current scheduling comparison:
 
@@ -258,12 +262,13 @@ Current scheduling comparison:
 | FCFS | 18.47 | 34.43 | 0.0333 |
 | SJF | 13.51 | 29.47 | 0.0333 |
 | RR-20 | 19.19 | 35.15 | 0.0333 |
-| Rule-WPM | 11.37 | 27.33 | 0.0333 |
+| Confidence_Rule_WPM | 11.54 | 27.50 | 0.0333 |
 
-The current Rule-WPM advisor uses predicted load level and forecast slope. Under
-high or rising predicted utilization it chooses the shortest remaining job;
-otherwise it keeps FCFS behavior. This gives the project an interpretable
-forecast-aware scheduling result even before PPO is added.
+The current Confidence_Rule_WPM advisor estimates prediction confidence from
+horizon stability. When confidence is high and predicted load is high or rising,
+it chooses the shortest remaining job; when confidence is low, it falls back to
+FCFS. In the deterministic Stage 1 simulation, mean confidence is `0.8022` and
+the scheduler trusts forecasts for `93.41%` of decisions.
 
 Generated files:
 
@@ -285,15 +290,16 @@ Current Stage 1 RL comparison inside `CPUSchedEnv`:
 | Random | 155.10 | 172.01 | -0.4424 |
 | FCFS policy | 153.45 | 170.17 | -0.4407 |
 | SJF policy | 84.43 | 101.23 | -0.6650 |
-| Rule-WPM policy | 84.31 | 101.11 | -0.6614 |
+| Confidence_Rule_WPM | 153.45 | 170.17 | -0.4407 |
 | PPO no forecast | 75.83 | 92.69 | -0.2973 |
 | PPO DeepSched | 89.06 | 105.63 | -0.3321 |
 
 Important Stage 1 finding: PPO learns a useful scheduling policy compared with
 random and fixed heuristic policies, but the forecast-aware PPO is not yet
-better than PPO without forecasts. This means PPO needs further reward/state
-tuning in Stage 2; the forecast-aware rule advisor remains the stronger
-interpretable scheduling result for now.
+better than PPO without forecasts. The confidence-aware rule falls back to FCFS
+in the Gymnasium environment because early episode forecast features are not yet
+informative. Future work must improve the environment forecast interface and PPO
+state/reward design.
 
 Generated files:
 
@@ -320,14 +326,14 @@ Generated or rebuilt files:
 
 The Stage 1 summary has been written in `docs/stage1_report.md`. It collects
 the current results, explains what they mean, documents the key limitations, and
-defines the Stage 2 plan.
+defines the future-work plan.
 
 Current Stage 1 conclusion:
 
 - DeepSched is implemented end to end.
 - CNN-LSTM-Attention is the strongest Stage 1 forecasting model.
-- Forecast-aware Rule-WPM is the strongest interpretable scheduling result.
-- PPO is operational but requires Stage 2 reward/state tuning.
+- Confidence_Rule_WPM is the strongest interpretable scheduling result.
+- PPO is operational but requires future reward/state tuning.
 - Larger Alibaba and Google datasets are required before final paper claims.
 
 ## How to Reproduce the Current Results
@@ -392,7 +398,7 @@ Run C-04 ablations:
 python scripts/run_ablation.py --epochs 15 --batch-size 64 --hidden-size 64 --cnn-channels 32
 ```
 
-Run scheduling baselines and Rule-WPM:
+Run scheduling baselines and Confidence_Rule_WPM:
 
 ```powershell
 python scheduler/run_baselines.py
@@ -472,20 +478,22 @@ DeepSched/
   requirements.txt
 ```
 
-## Stage 2 Plan
+## Future Work
 
-After Stage 1, the next development phase will:
+After Stage 1, future work will:
 
 - expand Alibaba trace coverage beyond the compact sample
 - add Google Cluster Trace experiments
 - rerun preprocessing for each dataset
 - retrain all WPM models and ablations
 - rerun forecast-quality analysis, including burst and peak detection
-- recalibrate Rule-WPM thresholds using validation data
+- calibrate confidence thresholds using validation residuals
+- compare confidence estimates from horizon stability, validation residuals,
+  ensembles, MC dropout, and conformal intervals
 - tune PPO state representation, reward design, and training length
 - evaluate PPO with and without forecasts across more seeds
 - rebuild all final paper figures and tables
-- write the full research paper from the Stage 2 results
+- write the full research paper from the expanded results
 
 ## Expected Paper Results
 
@@ -493,8 +501,10 @@ The final repository should produce:
 
 - Table I: workload prediction comparison across LSTM, CNN-LSTM, attention, and
   ablation variants.
-- Table II: scheduling comparison across classical schedulers, rule-based
-  DeepSched, PPO without forecasts, and PPO with forecasts.
+- Table II: scheduling comparison across classical schedulers,
+  Confidence_Rule_WPM, PPO without forecasts, and PPO with forecasts.
+- Confidence analysis showing when the scheduler trusts AI predictions and when
+  it falls back to classical scheduling behavior.
 - Figures for dataset analysis, prediction performance, attention weights,
   scheduling comparison, and PPO training convergence.
 

@@ -3,10 +3,15 @@
 from __future__ import annotations
 
 import sys
+import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
+
+_mpl_config_dir = ROOT / ".cache" / "matplotlib"
+_mpl_config_dir.mkdir(parents=True, exist_ok=True)
+os.environ.setdefault("MPLCONFIGDIR", str(_mpl_config_dir))
 
 import numpy as np
 import pandas as pd
@@ -14,6 +19,7 @@ import torch
 from stable_baselines3 import PPO
 
 from env.cpu_sched_env import CPUSchedEnv
+from scheduler.confidence import should_trust_forecast
 from scheduler.ppo_agent import load_wpm_forecaster
 
 
@@ -40,6 +46,8 @@ def rule_wpm_policy(obs: np.ndarray, max_queue: int) -> int:
     if n == 0:
         return 0
     forecast = obs[2 * max_queue : 3 * max_queue]
+    if not should_trust_forecast(forecast):
+        return 0
     u = float(np.mean(forecast))
     slope = float(forecast[-1] - forecast[0])
     if u >= 0.35 or slope >= 0.01:
@@ -106,7 +114,7 @@ def main() -> int:
         run_policy("Random", seeds, lambda obs, max_q: int(np.random.default_rng().integers(max_q))),
         run_policy("FCFS_policy", seeds, fcfs_policy),
         run_policy("SJF_policy", seeds, sjf_policy),
-        run_policy("Rule_WPM_policy", seeds, rule_wpm_policy, use_forecast=True),
+        run_policy("Confidence_Rule_WPM", seeds, rule_wpm_policy, use_forecast=True),
         run_ppo("PPO_no_forecast", seeds, use_forecast=False),
         run_ppo("PPO_DeepSched", seeds, use_forecast=True),
     ]
